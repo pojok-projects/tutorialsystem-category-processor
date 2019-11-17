@@ -31,6 +31,39 @@ module.exports = {
         }
     },
 
+    bulkvideocategory: async (req, res, next) => {
+        try {
+            var categoryArray = req.body.category_id.split(",");
+            const axiosReq = await axios.get(apidbil + 'content/metadata?limit=100')
+            if (axiosReq.status === 200) {
+                var tempCategory = []
+                categoryArray.forEach( (value) => {
+                    var picked = axiosReq.data.result.filter(o => o.category_id === value);
+                    picked.forEach( (pickValue) => {
+                        tempCategory.push(pickValue);
+                    } )
+                });
+
+                if (tempCategory) {
+                    res.send({ 
+                        status: {
+                            code: 200,
+                            message: 'index list query has been performed, data has been found',
+                            total: tempCategory.length
+                        },
+                        result: tempCategory
+                     })
+                } else {
+                    throw new Error(axiosReq)
+                }
+            } else {
+                throw new Error(axiosReq)
+            }
+        } catch (err) {
+            next(err)
+        }
+    },
+
     recommend: async (req, res, next) => {
         try {
             const axiosReq = await axios.get(apiuser + 'user/historyvideo/' + req.params.userid)
